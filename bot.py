@@ -44,6 +44,9 @@ def send_city_request(chat_id):
 @bot.callback_query_handler(func=lambda call: call.data.startswith("city_") or call.data == "other_city")
 def city_callback(call):
     chat_id = call.message.chat.id
+    if chat_id not in user_data:
+        user_data[chat_id] = {}
+
     if call.data == "other_city":
         bot.send_message(chat_id, "Введите ваш город вручную:")
         bot.answer_callback_query(call.id)
@@ -62,6 +65,9 @@ def city_callback(call):
 @bot.message_handler(func=lambda m: user_data.get(m.chat.id, {}).get("awaiting_city_input", False))
 def manual_city_input(message):
     chat_id = message.chat.id
+    if chat_id not in user_data:
+        user_data[chat_id] = {}
+
     city = message.text.strip()
     if city in allowed_cities:
         user_data[chat_id]["city"] = city
@@ -81,6 +87,9 @@ def show_product_menu(chat_id):
 @bot.callback_query_handler(func=lambda call: call.data.startswith("product_") or call.data == "back_to_city")
 def product_callback(call):
     chat_id = call.message.chat.id
+    if chat_id not in user_data:
+        user_data[chat_id] = {}
+
     if call.data == "back_to_city":
         user_data[chat_id].pop("city", None)
         user_data[chat_id].pop("product", None)
@@ -91,7 +100,7 @@ def product_callback(call):
         product = call.data[8:]
         user_data[chat_id]["product"] = product
         bot.answer_callback_query(call.id)
-        
+
         # Отправляем фото товара, если есть
         photo_path = f"photos/{product.upper()}.jpg"
         if os.path.exists(photo_path):
@@ -102,8 +111,11 @@ def product_callback(call):
 
 @bot.message_handler(func=lambda m: m.text.isdigit() and "product" in user_data.get(m.chat.id, {}))
 def quantity_selected(message):
-    grams = int(message.text)
     chat_id = message.chat.id
+    if chat_id not in user_data:
+        user_data[chat_id] = {}
+
+    grams = int(message.text)
     product = user_data[chat_id]["product"]
     price_usd = grams * products[product]
     price_rub = round(price_usd * 93, 2)
