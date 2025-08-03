@@ -101,18 +101,15 @@ def product_callback(call):
         user_data[chat_id]["product"] = product
         bot.answer_callback_query(call.id)
 
-     import os
+        # Отправляем фото товара, если есть
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        photo_path = os.path.join(BASE_DIR, f"{product}.jpg")  # ищем в корне проекта, имя файла должно совпадать точно с product
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Получаем путь к папке с ботом
-
-photo_path = os.path.join(BASE_DIR, f"{product}.jpg")  # Ищем файл в корне проекта по точному названию (без .upper())
-
-if os.path.exists(photo_path):
-    with open(photo_path, "rb") as photo:
-        bot.send_photo(chat_id, photo, caption=f"Вы выбрали *{product}*.\nСколько граммов хотите купить?", parse_mode="Markdown")
-else:
-    bot.send_message(chat_id, f"Вы выбрали *{product}*.\nСколько граммов хотите купить?", parse_mode="Markdown")
-
+        if os.path.exists(photo_path):
+            with open(photo_path, "rb") as photo:
+                bot.send_photo(chat_id, photo, caption=f"Вы выбрали *{product}*.\nСколько граммов хотите купить?", parse_mode="Markdown")
+        else:
+            bot.send_message(chat_id, f"Вы выбрали *{product}*.\nСколько граммов хотите купить?", parse_mode="Markdown")
 
 @bot.message_handler(func=lambda m: m.text.isdigit() and "product" in user_data.get(m.chat.id, {}))
 def quantity_selected(message):
