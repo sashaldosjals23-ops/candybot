@@ -2,7 +2,7 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import os
 
-TOKEN = "8369455981:AAFlF3dxQ2OopQExCz00MNcSSQLgs3PXPJM"
+TOKEN = "8369455981:AAGBJJYaKr0rJD24B9YVKip0Bunp2a7hXYE"
 bot = telebot.TeleBot(TOKEN)
 
 PRICE_PER_GRAM_USD = 20
