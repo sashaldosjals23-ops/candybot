@@ -1,7 +1,20 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import os
+from flask import Flask
+from threading import Thread
 
+# Flask-сервер для предотвращения сна на Replit
+app = Flask(__name__)
+
+@app.route('/')
+def keep_alive():
+    return 'Bot is running!'
+
+def run_flask():
+    app.run(host='0.0.0.0', port=8080)
+
+# Telegram Bot
 TOKEN = "8369455981:AAGBJJYaKr0rJD24B9YVKip0Bunp2a7hXYE"
 bot = telebot.TeleBot(TOKEN)
 
@@ -101,9 +114,8 @@ def product_callback(call):
         user_data[chat_id]["product"] = product
         bot.answer_callback_query(call.id)
 
-        # Отправляем фото товара, если есть
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        photo_path = os.path.join(BASE_DIR, f"{product}.jpg")  # ищем в корне проекта, имя файла должно совпадать точно с product
+        photo_path = os.path.join(BASE_DIR, f"{product}.jpg")
 
         if os.path.exists(photo_path):
             with open(photo_path, "rb") as photo:
@@ -139,8 +151,11 @@ def send_order_message(chat_id, product, grams, price_usd, price_rub, price_kzt)
 
 💸 Переведите сумму на кошелек:
 `TYF1hRDfrwXtW5qXcoffWxYbxecwaLjTph`
-(USDT / TRON)
+(USDT / TRC20)
 
 После оплаты нажмите кнопку ниже для связи с оператором."""
 
-bot.polling()
+# Запуск Flask и бота
+if __name__ == "__main__":
+    Thread(target=run_flask).start()
+    bot.polling()
