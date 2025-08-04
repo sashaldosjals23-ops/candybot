@@ -139,7 +139,7 @@ def send_order_message(chat_id, product, grams, price_usd, price_rub, price_kzt)
 
 💸 Переведите сумму на кошелек:
 `TYF1hRDfrwXtW5qXcoffWxYbxecwaLjTph`
-(USDT / TRC20)
+(USDT / TRON)
 
 После оплаты нажмите кнопку ниже для связи с оператором."""
 
