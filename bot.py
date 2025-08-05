@@ -22,7 +22,7 @@ bot = telebot.TeleBot(TOKEN)
 PRICE_PER_GRAM_USD = 20
 
 products = {
-    "КРИСТАЛЛ МЕФ": PRICE_PER_GRAM_USD,
+    "МЕФ КРИСТАЛЛ": PRICE_PER_GRAM_USD,
     "БОШКИ": PRICE_PER_GRAM_USD,
     "АМФЕТАМИН": PRICE_PER_GRAM_USD,
     "ЭКСТАЗИ": PRICE_PER_GRAM_USD,
