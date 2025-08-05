@@ -15,14 +15,6 @@ def home():
 def run():
     app.run(host='0.0.0.0', port=8080)
 
-# Запуск Flask-сервера (не даёт Replit уснуть)
-def keep_alive():
-    t = Thread(target=run)
-    t.start()
-
-# ⬇️ ОБЯЗАТЕЛЬНО ВЫЗЫВАЕМ ФУНКЦИЮ keep_alive
-keep_alive()
-
 # Telegram Bot
 TOKEN = "8369455981:AAGBJJYaKr0rJD24B9YVKip0Bunp2a7hXYE"
 bot = telebot.TeleBot(TOKEN)
@@ -30,13 +22,14 @@ bot = telebot.TeleBot(TOKEN)
 PRICE_PER_GRAM_USD = 20
 
 products = {
-    "МЕФ КРИСТАЛЛ": PRICE_PER_GRAM_USD,
+    "КРИСТАЛЛ МЕФ": PRICE_PER_GRAM_USD,
     "БОШКИ": PRICE_PER_GRAM_USD,
     "АМФЕТАМИН": PRICE_PER_GRAM_USD,
     "ЭКСТАЗИ": PRICE_PER_GRAM_USD,
     "ГАШИШ": PRICE_PER_GRAM_USD,
     "КОКАИН": PRICE_PER_GRAM_USD,
 }
+
 
 allowed_cities = [
     "Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань",
@@ -71,8 +64,8 @@ def city_callback(call):
 
     if call.data == "other_city":
         bot.send_message(chat_id, "Введите ваш город вручную:")
-        bot.answer_callback_query(call.id)
         user_data[chat_id]["awaiting_city_input"] = True
+        bot.answer_callback_query(call.id)
     else:
         city = call.data[5:]
         if city in allowed_cities:
@@ -87,9 +80,6 @@ def city_callback(call):
 @bot.message_handler(func=lambda m: user_data.get(m.chat.id, {}).get("awaiting_city_input", False))
 def manual_city_input(message):
     chat_id = message.chat.id
-    if chat_id not in user_data:
-        user_data[chat_id] = {}
-
     city = message.text.strip()
     if city in allowed_cities:
         user_data[chat_id]["city"] = city
@@ -109,35 +99,27 @@ def show_product_menu(chat_id):
 @bot.callback_query_handler(func=lambda call: call.data.startswith("product_") or call.data == "back_to_city")
 def product_callback(call):
     chat_id = call.message.chat.id
-    if chat_id not in user_data:
-        user_data[chat_id] = {}
-
     if call.data == "back_to_city":
         user_data[chat_id].pop("city", None)
         user_data[chat_id].pop("product", None)
         send_city_request(chat_id)
-        bot.answer_callback_query(call.id)
         bot.edit_message_text("Выберите ваш город:", chat_id=chat_id, message_id=call.message.message_id)
+        bot.answer_callback_query(call.id)
     else:
         product = call.data[8:]
         user_data[chat_id]["product"] = product
-        bot.answer_callback_query(call.id)
-
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         photo_path = os.path.join(BASE_DIR, f"{product}.jpg")
-
         if os.path.exists(photo_path):
             with open(photo_path, "rb") as photo:
                 bot.send_photo(chat_id, photo, caption=f"Вы выбрали *{product}*.\nСколько граммов хотите купить?", parse_mode="Markdown")
         else:
             bot.send_message(chat_id, f"Вы выбрали *{product}*.\nСколько граммов хотите купить?", parse_mode="Markdown")
+        bot.answer_callback_query(call.id)
 
 @bot.message_handler(func=lambda m: m.text.isdigit() and "product" in user_data.get(m.chat.id, {}))
 def quantity_selected(message):
     chat_id = message.chat.id
-    if chat_id not in user_data:
-        user_data[chat_id] = {}
-
     grams = int(message.text)
     product = user_data[chat_id]["product"]
     price_usd = grams * products[product]
@@ -145,7 +127,6 @@ def quantity_selected(message):
     price_kzt = round(price_usd * 470, 2)
 
     text = send_order_message(chat_id, product, grams, price_usd, price_rub, price_kzt)
-
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("📩 Связаться с оператором", url="https://t.me/operatortgbot"))
     bot.send_message(chat_id, text, parse_mode="Markdown", reply_markup=markup)
@@ -159,12 +140,12 @@ def send_order_message(chat_id, product, grams, price_usd, price_rub, price_kzt)
 💵 К оплате: *{price_usd}$* / *{price_rub}₽* / *{price_kzt}₸*
 
 💸 Переведите сумму на кошелек:
-`TYF1hRDfrwXtW5qXcoffWxYbxecwaLjTph`
+TYF1hRDfrwXtW5qXcoffWxYbxecwaLjTph
 (USDT / TRC20)
 
 После оплаты нажмите кнопку ниже для связи с оператором."""
 
-# Запуск Flask и бота
+# --- ЗАПУСК ВСЕГО ---
 if __name__ == "__main__":
-    Thread(target=run_flask).start()
-    bot.polling()
+    Thread(target=run).start()
+    bot.infinity_polling()
