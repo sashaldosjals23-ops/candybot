@@ -4,15 +4,24 @@ import os
 from flask import Flask
 from threading import Thread
 
-# Flask-сервер для предотвращения сна на Replit
+# Инициализация Flask-сервера
 app = Flask(__name__)
 
 @app.route('/')
-def keep_alive():
-    return 'Bot is running!'
+def home():
+    return '✅ Bot is running!'
 
-def run_flask():
+# Функция для запуска Flask в отдельном потоке
+def run():
     app.run(host='0.0.0.0', port=8080)
+
+# Запуск Flask-сервера (не даёт Replit уснуть)
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+
+# ⬇️ ОБЯЗАТЕЛЬНО ВЫЗЫВАЕМ ФУНКЦИЮ keep_alive
+keep_alive()
 
 # Telegram Bot
 TOKEN = "8369455981:AAGBJJYaKr0rJD24B9YVKip0Bunp2a7hXYE"
