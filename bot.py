@@ -1,12 +1,10 @@
 import telebot
-import os
-import time
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-# Telegram Bot
+import os
+
+# ====== Настройки бота ======
 TOKEN = "8369455981:AAGBJJYaKr0rJD24B9YVKip0Bunp2a7hXYE"
 bot = telebot.TeleBot(TOKEN)
-
-Thread(target=self_ping).start()
 
 PRICE_PER_GRAM_USD = 20
 
@@ -18,7 +16,6 @@ products = {
     "ГАШИШ": PRICE_PER_GRAM_USD,
     "КОКАИН": PRICE_PER_GRAM_USD,
 }
-
 
 allowed_cities = [
     "Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань",
@@ -32,6 +29,7 @@ allowed_cities = [
 
 user_data = {}
 
+# ====== Команда /start ======
 @bot.message_handler(commands=["start"])
 def start(message):
     chat_id = message.chat.id
@@ -45,6 +43,7 @@ def send_city_request(chat_id):
     markup.add(InlineKeyboardButton("Другой город", callback_data="other_city"))
     bot.send_message(chat_id, "Выберите ваш город из списка или напишите его вручную:", reply_markup=markup)
 
+# ====== Выбор города ======
 @bot.callback_query_handler(func=lambda call: call.data.startswith("city_") or call.data == "other_city")
 def city_callback(call):
     chat_id = call.message.chat.id
@@ -60,7 +59,8 @@ def city_callback(call):
         if city in allowed_cities:
             user_data[chat_id]["city"] = city
             user_data[chat_id].pop("awaiting_city_input", None)
-            bot.edit_message_text(f"Вы выбрали город: *{city}*", chat_id=chat_id, message_id=call.message.message_id, parse_mode="Markdown")
+            bot.edit_message_text(f"Вы выбрали город: *{city}*", chat_id=chat_id,
+                                  message_id=call.message.message_id, parse_mode="Markdown")
             show_product_menu(chat_id)
             bot.answer_callback_query(call.id)
         else:
@@ -78,6 +78,7 @@ def manual_city_input(message):
     else:
         bot.send_message(chat_id, "Извините, мы не работаем в вашем городе.")
 
+# ====== Меню товаров ======
 def show_product_menu(chat_id):
     markup = InlineKeyboardMarkup(row_width=2)
     for product in products.keys():
@@ -101,7 +102,8 @@ def product_callback(call):
         photo_path = os.path.join(BASE_DIR, f"{product}.jpg")
         if os.path.exists(photo_path):
             with open(photo_path, "rb") as photo:
-                bot.send_photo(chat_id, photo, caption=f"Вы выбрали *{product}*.\nСколько граммов хотите купить?", parse_mode="Markdown")
+                bot.send_photo(chat_id, photo, caption=f"Вы выбрали *{product}*.\nСколько граммов хотите купить?",
+                               parse_mode="Markdown")
         else:
             bot.send_message(chat_id, f"Вы выбрали *{product}*.\nСколько граммов хотите купить?", parse_mode="Markdown")
         bot.answer_callback_query(call.id)
@@ -130,11 +132,9 @@ def send_order_message(chat_id, product, grams, price_usd, price_rub, price_kzt)
 
 💸 Переведите сумму на кошелек:
 TYF1hRDfrwXtW5qXcoffWxYbxecwaLjTph
-(USDT / TRC20)
 
 После оплаты нажмите кнопку ниже для связи с оператором."""
 
-# --- ЗАПУСК ВСЕГО ---
+# ====== Запуск бота ======
 if __name__ == "__main__":
-    Thread(target=run).start()
     bot.infinity_polling()
