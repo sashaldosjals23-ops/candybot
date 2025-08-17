@@ -1,36 +1,10 @@
 import telebot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import os
-from flask import Flask
-from threading import Thread
 import time
-import requests  # 👈 нужно для self-ping
-
-# Инициализация Flask-сервера
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return '✅ Bot is running!'
-
-# Функция для запуска Flask в отдельном потоке
-def run():
-    app.run(host='0.0.0.0', port=8080)
-
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 # Telegram Bot
 TOKEN = "8369455981:AAGBJJYaKr0rJD24B9YVKip0Bunp2a7hXYE"
 bot = telebot.TeleBot(TOKEN)
-
-# 🔁 Self-ping, чтобы бот не засыпал
-ADMIN_CHAT_ID = 6524102867  # 👈 сюда вставь свой Telegram chat_id
-
-def self_ping():
-    while True:
-        try:
-            bot.send_message(ADMIN_CHAT_ID, "🤖 Бот жив, не спим!")
-        except Exception as e:
-            print("Ошибка self-ping:", e)
-        time.sleep(60)  # раз в минуту
 
 Thread(target=self_ping).start()
 
